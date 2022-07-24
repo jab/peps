@@ -29,7 +29,7 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
     from typing import Callable, Iterable
 
 
-    def map_iterable[I[T], T, U](function: Callable[[T], U], iterable: I[T]) -> I[U]:
+    def map_iterable[I[T]: Iterable[T], T, U](function: Callable[[T], U], iterable: I[T]) -> I[U]:
         return type(iterable)(map(function, iterable))
 
 :: 
@@ -39,7 +39,7 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
     type Unary[T, U] = Callable[[T], U]
 
     class Functor[T](Protocol):
-        def map[F[T], U](self, function: Unary[T, U]) -> F[U]:
+        def map[F[T]: Functor[T], U](self, function: Unary[T, U]) -> F[U]:
             ...
 
 References
