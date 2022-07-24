@@ -1,0 +1,49 @@
+PEP: 9999
+Title: Higher-Kinded TypeVars
+Author: Nikita Tikhonov <nekitdevofficial@gmail.com>, Alex Waygood <alex.waygood@gmail.com>
+Sponsor: Jelle Ziljstra <jelle.zijlstra@gmail.com>
+Discussions-To: https://github.com/nekitdev/peps/discussions
+Status: Draft
+Type: Standards Track
+Content-Type: text/x-rst
+Requires: 695
+Created: 24-Jul-2022
+Python-Version: 3.12
+
+Abstract
+========
+
+:pep:`484` introduced ``TypeVar``, enabling generics parametrized with a single type.
+``TypeVar`` itself can no be generic, though, and this PEP introduces
+parametrization of type variables - that is, a generic ``TypeVar``, enabling *Higher-Kinded Types*
+(*HKTs*). This enables a variety of use cases, in particular, it allows to write code generic
+over *type constructors*, instead of being generic over *types* only.
+
+Motivation
+==========
+
+HKTs have long been a requested feature, for quite some use cases [#typing-548]_.
+
+::
+
+    from typing import Callable, Iterable
+
+
+    def map_iterable[I[T], T, U](function: Callable[[T], U], iterable: I[T]) -> I[U]:
+        return type(iterable)(map(function, iterable))
+
+:: 
+
+    from typing import Callable, Protocol
+
+    type Unary[T, U] = Callable[[T], U]
+
+    class Functor[T](Protocol):
+        def map[F[T], U](self, function: Unary[T, U]) -> F[U]:
+            ...
+
+References
+==========
+
+.. [#typing-548] Python ``typing`` issue #548:
+   https://github.com/python/typing/issues/548
