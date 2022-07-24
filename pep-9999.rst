@@ -1,10 +1,12 @@
 PEP: 9999
 Title: Higher-Kinded TypeVars
-Author: Nikita Tikhonov <nekitdevofficial@gmail.com>, Alex Waygood <alex.waygood@gmail.com>
+Author: Nikita Tikhonov <nekitdevofficial@gmail.com>,
+        Alex Waygood <alex.waygood@gmail.com>
 Sponsor: Jelle Ziljstra <jelle.zijlstra@gmail.com>
 Discussions-To: https://github.com/nekitdev/peps/discussions
 Status: Draft
 Type: Standards Track
+Topic: Typing
 Content-Type: text/x-rst
 Requires: 695
 Created: 24-Jul-2022
@@ -24,15 +26,17 @@ Motivation
 
 HKTs have long been a requested feature, for quite some use cases [#typing-548]_.
 
-::
+.. code:: python
 
     from typing import Callable, Iterable
 
 
-    def map_iterable[I[T]: Iterable[T], T, U](function: Callable[[T], U], iterable: I[T]) -> I[U]:
+    def map_iterable[I[T]: Iterable[T], T, U](
+        function: Callable[[T], U], iterable: I[T]
+    ) -> I[U]:
         return type(iterable)(map(function, iterable))
 
-:: 
+.. code:: python
 
     from typing import Callable, Protocol
 
@@ -42,8 +46,36 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
         def map[F[T]: Functor[T], U](self, function: Unary[T, U]) -> F[U]:
             ...
 
+.. code:: python
+
+    from dataclasses import dataclass
+
+    @dataclass()
+    class Wrap[T](Functor[T]):
+        value: T
+
+        def map[W[T]: Wrap[T], U](
+            self: W[T], function: Unary[T, U]
+        ) -> W[U]:
+            return type(self)(function(self.value))
+
 References
 ==========
 
 .. [#typing-548] Python ``typing`` issue #548:
    https://github.com/python/typing/issues/548
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
+
+..
+   Local Variables:
+   mode: indented-text
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   coding: utf-8
+   End:
