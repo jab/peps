@@ -36,6 +36,12 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
     ) -> I[U]:
         return type(iterable)(map(function, iterable))
 
+
+    reveal_type(map_iterable(str, [1, 2, 3]))  # list[str]
+    reveal_type(map_iterable(str, (1, 2, 3)))  # tuple[str]
+    reveal_type(map_iterable(str, {1: 1}))  # fails
+    # `dict` can not be initialized from `Iterable[str]`
+
 .. code:: python
 
     from typing import Callable, Protocol
@@ -43,7 +49,7 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
     type Unary[T, U] = Callable[[T], U]
 
     class Functor[T](Protocol):
-        def map[F[T]: Functor[T], U](self, function: Unary[T, U]) -> F[U]:
+        def map[F[T]: Functor[T], U](self: F[T], function: Unary[T, U]) -> F[U]:
             ...
 
 .. code:: python
@@ -58,6 +64,35 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
             self: W[T], function: Unary[T, U]
         ) -> W[U]:
             return type(self)(function(self.value))
+
+.. code:: python
+
+    class BidirectionalMapping[K, V](Mapping[K, V]):
+        @property
+        def inverse[BM: BidirectionalMapping[K, V]](self: BM[K, V]) -> BM[V, K]:
+            ...
+
+
+    class bidict(BidirectionalMapping[K, V]):
+        @property
+        def inverse[BD: bidict[K, V]](self: BD[K, V]) -> BD[V, K]:
+            ...
+
+
+.. code:: python
+
+    >>> element_by_symbol = bidict({"H": "hydrogen"})  # bidict[str, str]
+    >>> element_by_symbol["H"]
+    "hydrogen"
+    >>> symbol_by_element = element_by_symbol.inverse  # bidict[str, str]
+    >>> symbol_by_element["hydrogen"]
+    "H"
+
+Specification
+=============
+
+Implementation
+==============
 
 References
 ==========
