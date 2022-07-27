@@ -56,7 +56,7 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
 
     from dataclasses import dataclass
 
-    @dataclass()
+    @dataclass
     class Wrap[T](Functor[T]):
         value: T
 
@@ -67,26 +67,45 @@ HKTs have long been a requested feature, for quite some use cases [#typing-548]_
 
 .. code:: python
 
+    from collections import Mapping, MutableMapping
+    
+    # Taken from https://github.com/jab/bidict
     class BidirectionalMapping[K, V](Mapping[K, V]):
+        """ABC for one-to-one Mapping; inverse Mapping maintained alongside forward mapping."""
+        
         @property
         def inverse[BM: BidirectionalMapping[K, V]](self: BM[K, V]) -> BM[V, K]:
             ...
 
 
-    class bidict(BidirectionalMapping[K, V]):
-        @property
-        def inverse[BD: bidict[K, V]](self: BD[K, V]) -> BD[V, K]:
-            ...
+    class bidict(BidirectionalMapping[K, V], MutableMapping[K, V]):
+         """Mutable BidirectionalMapping type."""
+         # Thanks to HKT, no need to override `inverse` in subclasses like this one just to tell
+         # type checkers that b.inverse is a bidict[V, K], not just a BidirectionalMapping[V, K].
+         # Without HKT, every subclass must resort to hard-coding the subtype in an override:
+         # - https://github.com/jab/bidict/blob/v0.22.0/bidict/_base.py#L165-L170
+         # - https://github.com/jab/bidict/blob/v0.22.0/bidict/_frozenbidict.py#L27-L31
+         # - https://github.com/jab/bidict/blob/v0.22.0/bidict/_bidict.py#L28-L30
+         # - https://github.com/jab/bidict/blob/v0.22.0/bidict/_orderedbidict.py#L32-L34
+         # - etc. 
 
 
 .. code:: python
 
-    >>> element_by_symbol = bidict({"H": "hydrogen"})  # bidict[str, str]
-    >>> element_by_symbol["H"]
-    "hydrogen"
-    >>> symbol_by_element = element_by_symbol.inverse  # bidict[str, str]
-    >>> symbol_by_element["hydrogen"]
-    "H"
+    >>> atomicnum_by_element = bidict({"hydrogen": 1})  # bidict[str, int]
+    >>> atomicnum_by_element.inverse  # bidict[int, str]
+    bidict({1: "hydrogen"})
+
+
+Prior Art
+=========
+
+* https://returns.readthedocs.io/en/latest/pages/hkt.html
+  TODO: Cite their HKT mypy plugin as evidence of demand for HKT in Python,
+  discuss the results that the developers and users have had with it,
+  to what extent this PEP and accompanying reference implementation(s)
+  are influenced by it, and any other relevant history.
+
 
 Specification
 =============
